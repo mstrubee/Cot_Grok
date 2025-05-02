@@ -2,64 +2,495 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Evaluador de Restaurante</title>
+  <!-- Meta viewport para dispositivos móviles -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cafetería - Modelo de Evaluación</title>
+  <!-- Bootstrap CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
+      background-color: #f5f8fa;
+      padding-bottom: 20px;
     }
-    .col {
-      flex: 1;
-      min-width: 280px;
+    .navbar {
+      background-color: #4CAF50;
     }
-    label, input {
-      display: block;
-      margin-bottom: 10px;
+    .navbar-brand, .nav-link {
+      color: #fff !important;
     }
-    input[type="number"] {
-      width: 100%;
+    .card {
+      margin-bottom: 15px;
     }
-    table {
+    .result, #resumen_periodos, #comensalesInfo, #promedioEstacion {
+      background-color: #e6ffe6;
+      border: 1px solid #b3ffb3;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+    }
+    .chart-container {
       margin-top: 20px;
-      width: 100%;
-      border-collapse: collapse;
     }
-    td, th {
-      padding: 8px;
-      border: 1px solid #ccc;
-      text-align: right;
+    .chart-wrapper {
+      height: 300px;
+    }
+    label {
+      font-weight: 500;
+    }
+    /* Ajustes para pantallas pequeñas */
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+      .card-body, .result {
+        padding: 10px;
+      }
+      .form-label, input.form-control {
+        font-size: 0.9rem;
+      }
     }
   </style>
 </head>
 <body>
-
-<div class="col">
-  <h2>Evaluador de Restaurante</h2>
-
-  <label>Ventas mensuales (en millones):
-    <input type="number" id="ventasBase" value="50">
-  </label>
-  <p><strong>Ventas con IVA:</strong> $<span id="ventasIVA">0</span></p>
-  <p><strong>Ventas netas:</strong> $<span id="netoMostrar">0</span></p>
-
-  <label>Inversión inicial (en millones):
-    <input type="number" id="inversion" value="10">
-  </label>
-  <p><strong>Inversión inicial:</strong> $<span id="inversionMonto">0</span></p>
-
-  <h3>Porcentajes de gasto</h3>
-  <label>Insumos y producción (%): <input type="number" id="insumos" value="38.5"></label>
-  <p>Valor: $<span id="gastoInsumos">0</span></p>
-
-  <label>Remuneraciones (%): <input type="number" id="remuneraciones" value="20"></label>
-  <p>Valor: $<span id="gastoRem">0</span></p>
-
-  <label>Dieta Directorio (%): <input type="number" id="dieta" value="20"></label>
-  <p>Valor: $<span id="gastoDieta">0</span></p>
-
-  <label>Arriendo (en millones): <input type="number" id="arriendoFijo" value="5"></label>
-  <p>Valor: $<span id="gastoArriendo">0</span> (<span id="porcArriendo
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg mb-3">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">VentasApp</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+              data-bs-target="#navbarNav" aria-controls="navbarNav"
+              aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Acerca</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Contacto</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- Contenedor Principal -->
+  <div class="container-fluid px-3">
+    <h1 class="text-center mb-3">Modelo de Evaluación de Ventas y Flujo</h1>
+    
+    <!-- Parámetros Base en dos columnas -->
+    <div class="card">
+      <div class="card-body">
+        <div class="row g-2">
+          <div class="col-6">
+            <label for="dias" class="form-label">Días operativos:</label>
+            <input type="number" id="dias" value="30" step="any" class="form-control form-control-sm">
+          </div>
+          <div class="col-6">
+            <label for="comensales" class="form-label">Comensales:</label>
+            <input type="number" id="comensales" value="60" step="any" class="form-control form-control-sm">
+          </div>
+          <div class="col-6">
+            <label for="ticket" class="form-label">Ticket (CLP):</label>
+            <input type="number" id="ticket" value="7500" step="any" class="form-control form-control-sm">
+          </div>
+          <div class="col-6">
+            <label for="llenados" class="form-label">Llenados/día:</label>
+            <input type="number" id="llenados" value="1" step="any" class="form-control form-control-sm">
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Factores de Estacionalidad para Ventas -->
+    <h2 class="mb-3">Factores de Estacionalidad (Ventas)</h2>
+    <div class="row row-cols-2 g-2">
+      <!-- Tarjeta para cada día -->
+      <div class="col">
+        <div class="card">
+          <div class="card-body">
+            <label for="est_lunes" class="form-label">Lunes:</label>
+            <input type="number" id="est_lunes" value="0.5" step="any" class="form-control form-control-sm">
+            <div id="info_est_lunes" class="mt-2"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card">
+          <div class="card-body">
+            <label for="est_martes" class="form-label">Martes:</label>
+            <input type="number" id="est_martes" value="0.6" step="any" class="form-control form-control-sm">
+            <div id="info_est_martes" class="mt-2"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card">
+          <div class="card-body">
+            <label for="est_miercoles" class="form-label">Miércoles:</label>
+            <input type="number" id="est_miercoles" value="0.8" step="any" class="form-control form-control-sm">
+            <div id="info_est_miercoles" class="mt-2"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card">
+          <div class="card-body">
+            <label for="est_jueves" class="form-label">Jueves:</label>
+            <input type="number" id="est_jueves" value="0.85" step="any" class="form-control form-control-sm">
+            <div id="info_est_jueves" class="mt-2"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card">
+          <div class="card-body">
+            <label for="est_viernes" class="form-label">Viernes:</label>
+            <input type="number" id="est_viernes" value="0.9" step="any" class="form-control form-control-sm">
+            <div id="info_est_viernes" class="mt-2"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card">
+          <div class="card-body">
+            <label for="est_sabado" class="form-label">Sábado:</label>
+            <input type="number" id="est_sabado" value="1.3" step="any" class="form-control form-control-sm">
+            <div id="info_est_sabado" class="mt-2"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card">
+          <div class="card-body">
+            <label for="est_domingo" class="form-label">Domingo:</label>
+            <input type="number" id="est_domingo" value="1.1" step="any" class="form-control form-control-sm">
+            <div id="info_est_domingo" class="mt-2"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Nuevo recuadro para mostrar el promedio de comensales según la sección de estacionalidad -->
+    <div id="promedioEstacion" class="result mb-3"></div>
+    
+    <!-- Resumen Semanal y Mensual -->
+    <div id="resumen_periodos" class="result mb-3"></div>
+    
+    <!-- Resultados Generales -->
+    <div id="resultados" class="result mb-3"></div>
+    
+    <!-- FILA de Gráficos: Se muestran dos gráficos pequeños lado a lado -->
+    <div class="row">
+      <div class="col-6">
+        <div class="chart-wrapper">
+          <canvas id="ventasChart"></canvas>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="chart-wrapper">
+          <canvas id="flujoChart"></canvas>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Nuevo recuadro para mostrar datos calculados de comensales por día (del flujo) -->
+    <div id="comensalesInfo" class="result mb-3"></div>
+  </div>
+  
+  <!-- Bootstrap JS Bundle (incluye Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // Función para formatear números a formato CLP sin decimales
+    function formatCLP(value) {
+      return value.toLocaleString('es-CL', { maximumFractionDigits: 0 });
+    }
+    
+    // Función auxiliar para parsear permitiendo el 0 (si no es número, retorna 1)
+    function safeParseFloat(value) {
+      const num = parseFloat(value);
+      return isNaN(num) ? 1 : num;
+    }
+    
+    // Función principal que calcula resultados y actualiza el gráfico de ventas
+    function calcularVentas() {
+      // Parámetros base
+      const dias = parseFloat(document.getElementById('dias').value) || 0;
+      const comensales = parseFloat(document.getElementById('comensales').value) || 0;
+      const ticket = parseFloat(document.getElementById('ticket').value) || 0;
+      const llenados = parseFloat(document.getElementById('llenados').value) || 0;
+  
+      // Bases de cálculo (para ventas)
+      const baseComensales = comensales * llenados;
+      const baseVentasBrutas = baseComensales * ticket;
+  
+      // Factores de estacionalidad (para ventas), de lunes a domingo
+      const estacionalidad = [
+        safeParseFloat(document.getElementById('est_lunes').value),
+        safeParseFloat(document.getElementById('est_martes').value),
+        safeParseFloat(document.getElementById('est_miercoles').value),
+        safeParseFloat(document.getElementById('est_jueves').value),
+        safeParseFloat(document.getElementById('est_viernes').value),
+        safeParseFloat(document.getElementById('est_sabado').value),
+        safeParseFloat(document.getElementById('est_domingo').value)
+      ];
+      
+      // Actualizar la información individual en cada día (para ventas)
+      const diaNames = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
+      diaNames.forEach((dia, index) => {
+        const factor = estacionalidad[index];
+        const infoElem = document.getElementById('info_est_' + dia);
+        if (factor === 0) {
+          infoElem.innerText = "CERRADO";
+        } else {
+          const comensalesDia = baseComensales * factor;
+          const ventasNetasDia = (baseVentasBrutas * factor) / 1.19;
+          infoElem.innerText = `Comensales: ${comensalesDia.toFixed(0)} - Ventas Netas: $${formatCLP(ventasNetasDia)}`;
+        }
+      });
+  
+      // Calculamos la suma de los factores e inmediatamente el promedio de comensales
+      const sumaSemanal = estacionalidad.reduce((a, b) => a + b, 0);
+      const avgFactComensales = baseComensales * (sumaSemanal / 7);
+      document.getElementById('promedioEstacion').innerHTML = `<strong>Promedio de comensales (según factores de estacionalidad):</strong> ${avgFactComensales.toLocaleString('es-CL', {maximumFractionDigits: 0})} personas`;
+  
+      // Cálculos generales para "dias" operativos (ventas)
+      const semanas = Math.floor(dias / 7);
+      const resto = dias % 7;
+      let totalBrutas = semanas * (baseVentasBrutas * sumaSemanal);
+      for (let i = 0; i < resto; i++){
+        totalBrutas += baseVentasBrutas * estacionalidad[i];
+      }
+      const totalNetas = totalBrutas / 1.19;
+      const promedioBrutas = dias ? totalBrutas / dias : 0;
+      const promedioNetas = dias ? totalNetas / dias : 0;
+  
+      // Actualizar sección de resultados generales
+      document.getElementById('resultados').innerHTML = `
+        <strong>Resultados (para ${dias} días operativos):</strong><br>
+        Base de ventas diarias (sin factor estacional): $${formatCLP(baseVentasBrutas)}<br><br>
+        Ventas brutas totales: $${formatCLP(totalBrutas)}<br>
+        Ventas netas totales: $${formatCLP(totalNetas)}<br><br>
+        Promedio diario – Ventas brutas: $${formatCLP(promedioBrutas)} / Ventas netas: $${formatCLP(promedioNetas)}
+      `;
+  
+      // Resumen Semanal (7 días)
+      const weeklyComensales = baseComensales * sumaSemanal;
+      const weeklyVentasBrutas = baseVentasBrutas * sumaSemanal;
+      const weeklyVentasNetas = weeklyVentasBrutas / 1.19;
+      
+      // Resumen Mensual (30 días)
+      const diasMes = 30;
+      const semanasCompletas = Math.floor(diasMes / 7);
+      const diasRestantes = diasMes % 7;
+      let sumaRestante = 0;
+      for (let i = 0; i < diasRestantes; i++) {
+        sumaRestante += estacionalidad[i];
+      }
+      const monthlyFactor = semanasCompletas * sumaSemanal + sumaRestante;
+      const monthlyComensales = baseComensales * monthlyFactor;
+      const monthlyVentasBrutas = baseVentasBrutas * monthlyFactor;
+      const monthlyVentasNetas = monthlyVentasBrutas / 1.19;
+  
+      // Actualizar resumen de períodos
+      document.getElementById('resumen_periodos').innerHTML = `
+        <strong>Resumen Semanal (7 días):</strong><br>
+        Comensales Semanales: ${weeklyComensales.toLocaleString('es-CL', {maximumFractionDigits: 0})}<br>
+        Ventas Brutas Semanales: $${formatCLP(weeklyVentasBrutas)}<br>
+        Ventas Netas Semanales: $${formatCLP(weeklyVentasNetas)}<br><br>
+        <strong>Resumen Mensual (30 días):</strong><br>
+        Comensales Mensuales: ${monthlyComensales.toLocaleString('es-CL', {maximumFractionDigits: 0})}<br>
+        Ventas Brutas Mensuales: $${formatCLP(monthlyVentasBrutas)}<br>
+        Ventas Netas Mensuales: $${formatCLP(monthlyVentasNetas)}
+      `;
+  
+      actualizarGraficoVentas(baseVentasBrutas, estacionalidad);
+    }
+    
+    // Actualiza el gráfico de Ventas Netas
+    function actualizarGraficoVentas(ventasBase, estacionalidad) {
+      const ctx = document.getElementById('ventasChart').getContext('2d');
+      if (window.chartInstanceVentas) {
+        window.chartInstanceVentas.destroy();
+      }
+      
+      const labels = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+      const datosNetas = estacionalidad.map(factor => (ventasBase * factor) / 1.19);
+  
+      window.chartInstanceVentas = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Ventas Netas',
+            data: datosNetas,
+            backgroundColor: '#4CAF50'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const index = context.dataIndex;
+                  const factor = estacionalidad[index];
+                  const valor = context.parsed.y;
+                  if (factor === 0) return "CERRADO";
+                  const valorEnMillones = (valor / 1000000).toFixed(2);
+                  return valorEnMillones + " M";
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return '$' + value.toLocaleString('es-CL', { maximumFractionDigits: 0 });
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // Plugin personalizado para el gráfico de Flujo: ahora se mueven los textos más abajo y se muestra el promedio diario debajo de cada día.
+    const customMeanAndDailyPlugin = {
+      id: 'customMeanAndDailyPlugin',
+      afterDraw: function(chart) {
+        const { ctx, chartArea: { left, bottom, right } } = chart;
+        const capacity = 60;
+        // Porcentajes fijos para la franja mañanera (9:00-13:00)
+        const morningPercentages = [0.70, 0.75, 0.80, 0.90, 0.95, 1.40, 1.10];
+        // Porcentajes para la franja media tarde (15:00-18:00)
+        const afternoonPercentages = [0.60, 0.65, 0.70, 0.75, 0.80, 1.20, 0.70];
+        // Calcular promedios globales de cada franja
+        const avgMorning = morningPercentages.reduce((a, b) => a + b, 0) / morningPercentages.length * capacity;
+        const avgAfternoon = afternoonPercentages.reduce((a, b) => a + b, 0) / afternoonPercentages.length * capacity;
+  
+        ctx.save();
+        ctx.font = "12px Arial";
+        ctx.fillStyle = "black";
+        ctx.textAlign = "left";
+        // Mover el texto global un poco más abajo: bottom + 40px
+        ctx.fillText("Promedio Mañana: " + avgMorning.toFixed(0) + " personas", left, bottom + 40);
+        ctx.textAlign = "right";
+        ctx.fillText("Promedio Tarde: " + avgAfternoon.toFixed(0) + " personas", right, bottom + 40);
+  
+        // Dibujar el promedio diario (de la suma de ambas franjas) debajo de cada etiqueta
+        const xScale = chart.scales.x;
+        ctx.font = "10px Arial";
+        ctx.fillStyle = "blue";
+        ctx.textAlign = "center";
+        // Para cada tick (día), calcular el promedio diario:
+        // ( (morningPercentage + afternoonPercentage) / 2 ) * capacity
+        for (let i = 0; i < xScale.ticks.length; i++) {
+          const x = xScale.getPixelForTick(i);
+          const dailyAvg = ((morningPercentages[i] + afternoonPercentages[i]) / 2) * capacity;
+          // Dibujar el texto 15px debajo del área de dibujo (bottom + 55px)
+          ctx.fillText("Prom: " + dailyAvg.toFixed(0), x, bottom + 55);
+        }
+  
+        ctx.restore();
+      }
+    };
+    
+    // Actualiza el gráfico del Flujo de Clientes
+    function actualizarFlujoChart() {
+      const capacity = 60; // Capacidad de la cafetería
+      // Porcentajes fijos para la franja mañanera (9:00-13:00)
+      const morningPercentages = [0.70, 0.75, 0.80, 0.90, 0.95, 1.40, 1.10];
+      // Porcentajes para la franja media tarde (15:00-18:00)
+      const afternoonPercentages = [0.60, 0.65, 0.70, 0.75, 0.80, 1.20, 0.70];
+  
+      const morningFlow = morningPercentages.map(p => Math.round(p * capacity));
+      const afternoonFlow = afternoonPercentages.map(p => Math.round(p * capacity));
+      const labels = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+      
+      const dataFlow = {
+        labels: labels,
+        datasets: [
+          {
+            label: "Mañana (9:00-13:00)",
+            data: morningFlow,
+            backgroundColor: "rgba(54, 162, 235, 0.7)"
+          },
+          {
+            label: "Media Tarde (15:00-18:00)",
+            data: afternoonFlow,
+            backgroundColor: "rgba(255, 159, 64, 0.7)"
+          }
+        ]
+      };
+      
+      const ctx = document.getElementById('flujoChart').getContext('2d');
+      if (window.chartInstanceFlujo) {
+        window.chartInstanceFlujo.destroy();
+      }
+      
+      window.chartInstanceFlujo = new Chart(ctx, {
+        type: 'bar',
+        data: dataFlow,
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Flujo de Clientes por Franja (Número de Personas)'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + context.parsed.y + ' personas';
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Número de Personas'
+              }
+            }
+          }
+        },
+        plugins: [customMeanAndDailyPlugin]
+      });
+      
+      // Actualizar información de comensales por día, calculando la suma de ambas franjas.
+      updateComensalesInfo(morningFlow, afternoonFlow, labels);
+    }
+    
+    // Función que calcula y muestra debajo del gráfico el total estimado de comensales por día y el promedio diario
+    function updateComensalesInfo(morningFlow, afternoonFlow, labels) {
+      const dailyTotals = morningFlow.map((val, i) => val + afternoonFlow[i]);
+      const averageDaily = dailyTotals.reduce((a, b) => a + b, 0) / dailyTotals.length;
+      let html = "<strong>Total estimado de comensales por día:</strong><br>";
+      for (let i = 0; i < labels.length; i++) {
+        html += labels[i] + ": " + dailyTotals[i] + " personas<br>";
+      }
+      html += "<br><strong>Promedio diario de comensales:</strong> " + averageDaily.toFixed(0) + " personas";
+      document.getElementById("comensalesInfo").innerHTML = html;
+    }
+    
+    // Escuchar cambios en todos los inputs para recalcular
+    document.querySelectorAll('input').forEach(input => {
+      input.addEventListener('input', function() {
+        calcularVentas();
+        actualizarFlujoChart();
+      });
+    });
+    
+    window.addEventListener('DOMContentLoaded', function() {
+      calcularVentas();
+      actualizarFlujoChart();
+    });
+  </script>
+</body>
+</html>
