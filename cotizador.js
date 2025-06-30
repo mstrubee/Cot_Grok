@@ -27,7 +27,8 @@ const espesoresPorVidrio = {
 const coloresSeparador = ["Negro", "Plata Mate", "Bronce"];
 const espesoresSeparador = [6, 8, 10, 12, 15, 19, 20];
 
-function agregarProducto() {const tbody = document.getElementById("cuerpoTabla");
+function agregarProducto() {
+  const tbody = document.getElementById("cuerpoTabla");
   const id = contadorProductos++;
 
   const tr = document.createElement("tr");
@@ -65,7 +66,6 @@ function agregarProducto() {const tbody = document.getElementById("cuerpoTabla")
   tbody.appendChild(tr);
   actualizarCampos(id);
   calcularLinea(id);
-  actualizarResumen();
 }
 
 function mostrarCantidad(id, tipo) {

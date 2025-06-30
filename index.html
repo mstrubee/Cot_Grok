@@ -1,96 +1,93 @@
-<!DOCTYPE html>
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cotizador PROTAM</title>
-  <link rel="stylesheet" href="styles.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="auth.js"></script>
-  <script src="utils.js"></script>
-  <script src="dataLoader.js"></script>
-  <script src="cotizador.js"></script>
-  <script src="storage.js"></script>
-  <script src="pdfExporter.js"></script>
-  <style>
-    #cotizacionForm {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 8px;
-      max-width: 300px;
-    }
-    #cotizacionForm input {
-      width: 100%;
-    }
-  </style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cotizador PROTAM</title>
+<link href="styles.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="auth.js"></script>
+<script src="utils.js"></script>
+<script src="dataLoader.js"></script>
+<script src="cotizador.js"></script>
+<script src="storage.js"></script>
+<script src="pdfExporter.js"></script>
 </head>
 <body>
-  <header>
-    <h1>Cotizador PROTAM</h1>
-    <button onclick="logout()">Cerrar Sesión</button>
-  </header>
-  <div class="container">
-    <h2>Nueva Cotización</h2>
-    <form id="cotizacionForm">
-      <input type="text" id="nombreEmpresa" placeholder="Nombre" />
-      <input type="text" id="empresa" placeholder="Empresa" />
-      <input type="text" id="obra" placeholder="Obra" />
-      <input type="text" id="direccion" placeholder="Dirección" />
-      <input type="text" id="presupuesto" placeholder="Presupuesto" />
-      <input type="text" id="version" placeholder="Versión" readonly />
-      <input type="text" id="fechaCotizacion" placeholder="Fecha de Cotización" readonly />
-      <input type="text" id="folio" placeholder="Folio" />
-      <input type="text" id="supervisor" placeholder="Supervisor" />
-    </form>
-    <div>
-      <button id="agregarProducto">+ Añadir Ítem</button>
-      <button id="agregarSimilar">+ Añadir Similar</button>
-      <button id="borrarSeleccion">Borrar Selección</button>
-      <button id="guardarCotizacion">Guardar Cotización</button>
-      <button id="exportarPDF">Exportar a PDF</button>
-    </div>
-    <div class="table-container">
-      <table id="tablaResumen">
-        <thead>
-          <tr>
-            <th>#</th><th>Nombre</th><th>Cantidad</th><th>Elemento</th><th>Alto (mm)</th><th>Ancho (mm)</th>
-            <th>Vidrio A</th><th>Espesor A</th><th>Vidrio B</th><th>Espesor B</th><th>Separador</th>
-            <th>Espesor Sep.</th><th>Color Sep.</th><th>Terminación</th><th>Perforación</th><th>Destajado</th>
-            <th>m²</th><th>mL</th><th>Peso</th><th>Precio</th><th>Seleccionar</th>
-          </tr>
-        </thead>
-        <tbody id="cuerpoTabla"></tbody>
-      </table>
-    </div>
-    <div id="resumenCotizacion">
-      <!-- Casilla Transporte y dirección -->
-      <div>
-        <input type="checkbox" id="servicioTransporte" />
-        <label for="servicioTransporte"> Transporte</label>
-        <input type="text" id="direccionTransporte" placeholder="Dirección de Transporte" style="display:none; margin-left:10px;" />
-      </div>
-      <p>Total Neto: $0</p>
-      <p>IVA (19%): $0</p>
-      <p>Total Final: $0</p>
-    </div>
-  </div>
-  <script>
+<header>
+<h1>Cotizador PROTAM</h1>
+<button onclick="logout()">Cerrar Sesión</button>
+</header>
+<div class="container">
+<h2>Nueva Cotización</h2>
+<form id="cotizacionForm"><div><input id="nombreEmpresa" placeholder="Nombre" style="width: auto; display: block; margin-bottom: 8px;"/></div><div><input id="empresa" placeholder="Empresa" style="width: auto; display: block; margin-bottom: 8px;"/></div><div><input id="obra" placeholder="Obra" style="width: auto; display: block; margin-bottom: 8px;"/></div><div><input id="direccion" placeholder="Dirección" style="width: auto; display: block; margin-bottom: 8px;"/></div><div><input id="presupuesto" placeholder="Presupuesto" style="width: auto; display: block; margin-bottom: 8px;"/></div><div><input id="version" placeholder="Versión" readonly="readonly" style="width: auto; display: block; margin-bottom: 8px;"/></div><div><input id="fechaCotizacion" placeholder="Fecha de Cotización" readonly="readonly" style="width: auto; display: block; margin-bottom: 8px;"/></div><div><input id="folio" placeholder="Folio" style="width: auto; display: block; margin-bottom: 8px;"/></div><div><input id="supervisor" placeholder="Supervisor" style="width: auto; display: block; margin-bottom: 8px;"/></div></form>
+<div>
+<button id="agregarProducto">+ Añadir Ítem</button>
+<button id="agregarSimilar">+ Añadir Similar</button>
+<button id="borrarSeleccion">Borrar Selección</button>
+<button id="guardarCotizacion">Guardar Cotización</button>
+<button id="exportarPDF">Exportar a PDF</button>
+</div>
+<div class="table-container">
+<table id="tablaResumen">
+<thead>
+<tr>
+<th>#</th><th>Nombre</th><th>Cantidad</th><th>Elemento</th><th>Alto (mm)</th><th>Ancho (mm)</th>
+<th>Vidrio A</th><th>Espesor A</th><th>Vidrio B</th><th>Espesor B</th><th>Separador</th>
+<th>Espesor Sep.</th><th>Color Sep.</th><th>Terminación</th><th>Perforación</th><th>Destajado</th>
+<th>m²</th><th>mL</th><th>Peso</th><th>Precio</th><th>Entrega</th><th>Seleccionar</th>
+</tr>
+</thead>
+<tbody id="cuerpoTabla"></tbody>
+</table>
+</div>
+<div><label><input id="servicioTransporte" type="checkbox"/> Transporte</label><input id="direccionTransporte" placeholder="Dirección de Transporte" style="display:none; margin-left:10px;"/></div><div id="resumenCotizacion">
+<p>Total Neto: $0</p>
+<p>IVA (19%): $0</p>
+<p>Total Final: $0</p>
+</div><script>
     document.addEventListener("DOMContentLoaded", () => {
-      // Autocompletar fecha y versión
-      const fechaInput = document.getElementById("fechaCotizacion");
-      const versionInput = document.getElementById("version");
-      if (fechaInput) {
-        const hoy = new Date();
-        fechaInput.value = hoy.toLocaleDateString();
-      }
-      if (versionInput) {
-        const usuario = localStorage.getItem("usuario") || "default";
-        const historial = JSON.parse(localStorage.getItem(`cotizaciones_${usuario}`) || "[]");
-        versionInput.value = historial.length + 1;
-      }
-      // Mostrar/ocultar dirección transporte
       const chk = document.getElementById("servicioTransporte");
       const dir = document.getElementById("direccionTransporte");
       if (chk && dir) {
@@ -99,6 +96,23 @@
         });
       }
     });
-  </script>
-</body>
+    </script>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const fechaInput = document.getElementById("fechaCotizacion");
+  const versionInput = document.getElementById("version");
+
+  if (fechaInput) {
+    const hoy = new Date();
+    fechaInput.value = hoy.toLocaleDateString();
+  }
+
+  if (versionInput) {
+    const usuario = localStorage.getItem("usuario") || "default";
+    const historial = JSON.parse(localStorage.getItem(`cotizaciones_${usuario}`) || "[]");
+    versionInput.value = historial.length + 1;
+  }
+});
+</script></body>
 </html>
