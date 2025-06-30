@@ -2,6 +2,7 @@ function verificarClave() {
   const clave = document.getElementById("adminClave").value;
   console.log("Verificando clave de administrador:", clave);
   if (clave === "6658") {
+    localStorage.setItem("usuario", "Administrador");
     console.log("Clave de administrador correcta, mostrando panel");
     document.querySelector(".login-container").style.display = "none";
     document.getElementById("adminPanel").style.display = "block";
