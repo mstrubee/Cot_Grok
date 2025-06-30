@@ -38,62 +38,65 @@
         return gk_fileData[filename] || "";
         }
         </script><!DOCTYPE html>
+
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cotizador GPT</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="auth.js"></script>
-  <script src="utils.js"></script>
-  <script src="dataLoader.js"></script>
-  <script src="cotizador.js"></script>
-  <script src="storage.js"></script>
-  <script src="pdfExporter.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cotizador PROTAM</title>
+<link href="styles.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="auth.js"></script>
+<script src="utils.js"></script>
+<script src="dataLoader.js"></script>
+<script src="cotizador.js"></script>
+<script src="storage.js"></script>
+<script src="pdfExporter.js"></script>
 </head>
 <body>
-  <header>
-    <h1>Cotizador GPT</h1>
-    <button onclick="logout()">Cerrar Sesión</button>
-  </header>
-  <div class="container">
-    <h2>Nueva Cotización</h2>
-    <form id="cotizacionForm">
-      <input type="text" id="nombreEmpresa" placeholder="Nombre Empresa">
-      <input type="text" id="obra" placeholder="Obra">
-      <input type="text" id="direccion" placeholder="Dirección">
-      <input type="text" id="folio" placeholder="Folio">
-      <input type="text" id="supervisor" placeholder="Supervisor">
-      <label><input type="checkbox" id="servicioInstalacion"> Instalación</label>
-      <label><input type="checkbox" id="servicioTransporte"> Transporte</label>
-    </form>
-    <div>
-      <button id="agregarProducto">+ Añadir Ítem</button>
-      <button id="agregarSimilar">+ Añadir Similar</button>
-      <button id="borrarSeleccion">Borrar Selección</button>
-      <button id="guardarCotizacion">Guardar Cotización</button>
-      <button id="exportarPDF">Exportar a PDF</button>
-    </div>
-    <div class="table-container">
-      <table id="tablaResumen">
-        <thead>
-          <tr>
-            <th>#</th><th>Nombre</th><th>Cantidad</th><th>Elemento</th><th>Alto (mm)</th><th>Ancho (mm)</th>
-            <th>Vidrio A</th><th>Espesor A</th><th>Vidrio B</th><th>Espesor B</th><th>Separador</th>
-            <th>Espesor Sep.</th><th>Color Sep.</th><th>Terminación</th><th>Perforación</th><th>Destajado</th>
-            <th>m²</th><th>mL</th><th>Peso</th><th>Precio</th><th>Entrega</th><th>Seleccionar</th>
-          </tr>
-        </thead>
-        <tbody id="cuerpoTabla"></tbody>
-      </table>
-    </div>
-    <div id="resumenCotizacion">
-      <p>Total Neto: $0</p>
-      <p>IVA (19%): $0</p>
-      <p>Total Final: $0</p>
-    </div>
-  </div>
+<header>
+<h1>Cotizador PROTAM</h1>
+<button onclick="logout()">Cerrar Sesión</button>
+</header>
+<div class="container">
+<h2>Nueva Cotización</h2>
+<form id="cotizacionForm"><input id="nombreEmpresa" placeholder="Nombre Empresa" type="text"/><br/><input id="obra" placeholder="Obra" type="text"/><br/><input id="direccion" placeholder="Dirección" type="text"/><br/><input id="presupuesto" placeholder="Presupuesto" type="text"/><br/><input id="version" placeholder="Versión" readonly="readonly" type="text"/><br/><input id="fechaCotizacion" placeholder="Fecha de Cotización" readonly="readonly" type="text"/><br/><input id="folio" placeholder="Folio" type="text"/><br/><input id="supervisor" placeholder="Supervisor" type="text"/><br/></form>
+<div>
+<button id="agregarProducto">+ Añadir Ítem</button>
+<button id="agregarSimilar">+ Añadir Similar</button>
+<button id="borrarSeleccion">Borrar Selección</button>
+<button id="guardarCotizacion">Guardar Cotización</button>
+<button id="exportarPDF">Exportar a PDF</button>
+</div>
+<div class="table-container">
+<table id="tablaResumen">
+<thead>
+<tr>
+<th>#</th><th>Nombre</th><th>Cantidad</th><th>Elemento</th><th>Alto (mm)</th><th>Ancho (mm)</th>
+<th>Vidrio A</th><th>Espesor A</th><th>Vidrio B</th><th>Espesor B</th><th>Separador</th>
+<th>Espesor Sep.</th><th>Color Sep.</th><th>Terminación</th><th>Perforación</th><th>Destajado</th>
+<th>m²</th><th>mL</th><th>Peso</th><th>Precio</th><th>Entrega</th><th>Seleccionar</th>
+</tr>
+</thead>
+<tbody id="cuerpoTabla"></tbody>
+</table>
+</div>
+<div id="resumenCotizacion"><div><label><input id="servicioTransporte" type="checkbox"/> Transporte</label><input id="direccionTransporte" placeholder="Dirección de Transporte" style="display:none; margin-left:10px;"/></div>
+<p>Total Neto: $0</p>
+<p>IVA (19%): $0</p>
+<p>Total Final: $0</p>
+</div><script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const chk = document.getElementById("servicioTransporte");
+      const dir = document.getElementById("direccionTransporte");
+      if (chk && dir) {
+        chk.addEventListener("change", () => {
+          dir.style.display = chk.checked ? "inline-block" : "none";
+        });
+      }
+    });
+    </script>
+</div>
 </body>
 </html>
