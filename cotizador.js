@@ -324,36 +324,30 @@ function calcularLinea(id) {
 
 function actualizarResumen() {
   try {
-    const resumen = document.getElementById("resumenCotizacion");
-    const precios = Array.from(document.querySelectorAll('[id^="precio-"]')).map(e => {
-      const txt = e.innerText;
-      return txt === "A PEDIDO" || txt === "Error" ? 0 : parseInt(txt.replace(/[^0-9]/g, '')) || 0;
+    let total = 0;
+    const filas = document.querySelectorAll("#cuerpoTabla tr");
+    filas.forEach(fila => {
+      const celda = fila.querySelector("td:nth-last-child(2)");
+      if (celda) {
+        let texto = celda.textContent.trim();
+        texto = texto.replace(/\$/g, "").replace(/\./g, "").replace(",", ".");
+        const valor = parseFloat(texto);
+        if (!isNaN(valor)) {
+          total += valor;
+        }
+      }
     });
-    const aPedido = productosCotizados.some(p => p && p.precio === "A PEDIDO");
-    let totalNeto = precios.reduce((a, b) => a + b, 0);
 
-    const instalacion = document.getElementById("servicioInstalacion").checked;
-    const transporte = document.getElementById("servicioTransporte").checked;
-    if (instalacion && preciosBase.servicios?.instalacion?.precio) {
-      totalNeto += parseFloat(preciosBase.servicios.instalacion.precio);
-    }
-    if (transporte && preciosBase.servicios?.transporte?.precio) {
-      totalNeto += parseFloat(preciosBase.servicios.transporte.precio);
-    }
+    const totalNeto = Math.round(total);
+    const iva = Math.round(total * 0.19);
+    const totalFinal = totalNeto + iva;
 
-    const iva = aPedido ? 0 : totalNeto * 0.19;
-    const total = aPedido ? 0 : totalNeto + iva;
-
-    resumen.innerHTML = `
-      <p>Total Neto: ${aPedido ? "A PEDIDO" : `$${totalNeto.toLocaleString()}`}</p>
-      <p>IVA (19%): ${aPedido ? "A PEDIDO" : `$${iva.toLocaleString()}`}</p>
-      <p>Total Final: ${aPedido ? "A PEDIDO" : `$${total.toLocaleString()}`}</p>
-    `;
-    resumen.style.color = aPedido ? "red" : "inherit";
+    document.querySelector("#resumenCotizacion").querySelector("p:nth-of-type(1)").textContent = `Total Neto: $${totalNeto.toLocaleString("es-CL")}`;
+    document.querySelector("#resumenCotizacion").querySelector("p:nth-of-type(2)").textContent = `IVA (19%): $${iva.toLocaleString("es-CL")}`;
+    document.querySelector("#resumenCotizacion").querySelector("p:nth-of-type(3)").textContent = `Total Final: $${totalFinal.toLocaleString("es-CL")}`;
   } catch (error) {
-    console.error("Error en actualizarResumen:", error);
-    document.getElementById("resumenCotizacion").innerHTML = "<p>Error al calcular el resumen</p>";
-    document.getElementById("resumenCotizacion").style.color = "red";
+    console.error("Error al calcular el resumen", error);
+    alert("Error al calcular el resumen");
   }
 }
 
