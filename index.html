@@ -61,7 +61,7 @@
 </header>
 <div class="container">
 <h2>Nueva Cotización</h2>
-<form id="cotizacionForm"><input id="nombreEmpresa" placeholder="Nombre Empresa" type="text"/><br/><input id="obra" placeholder="Obra" type="text"/><br/><input id="direccion" placeholder="Dirección" type="text"/><br/><input id="presupuesto" placeholder="Presupuesto" type="text"/><br/><input id="version" placeholder="Versión" readonly="readonly" type="text"/><br/><input id="fechaCotizacion" placeholder="Fecha de Cotización" readonly="readonly" type="text"/><br/><input id="folio" placeholder="Folio" type="text"/><br/><input id="supervisor" placeholder="Supervisor" type="text"/><br/></form>
+<form id="cotizacionForm"><input id="nombreEmpresa" placeholder="Nombre"/><br/><input id="empresa" placeholder="Empresa"/><br/><input id="obra" placeholder="Obra"/><br/><input id="direccion" placeholder="Dirección"/><br/><input id="presupuesto" placeholder="Presupuesto"/><br/><input id="version" placeholder="Versión" readonly="readonly"/><br/><input id="fechaCotizacion" placeholder="Fecha de Cotización" readonly="readonly"/><br/><input id="folio" placeholder="Folio"/><br/><input id="supervisor" placeholder="Supervisor"/><br/></form>
 <div>
 <button id="agregarProducto">+ Añadir Ítem</button>
 <button id="agregarSimilar">+ Añadir Similar</button>
@@ -82,7 +82,7 @@
 <tbody id="cuerpoTabla"></tbody>
 </table>
 </div>
-<div id="resumenCotizacion"><div><label><input id="servicioTransporte" type="checkbox"/> Transporte</label><input id="direccionTransporte" placeholder="Dirección de Transporte" style="display:none; margin-left:10px;"/></div>
+<div><label><input id="servicioTransporte" type="checkbox"/> Transporte</label><input id="direccionTransporte" placeholder="Dirección de Transporte" style="display:none; margin-left:10px;"/></div><div id="resumenCotizacion">
 <p>Total Neto: $0</p>
 <p>IVA (19%): $0</p>
 <p>Total Final: $0</p>

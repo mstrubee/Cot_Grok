@@ -245,7 +245,8 @@ function mostrarPreciosEnTabla(precios) {
   categorias.forEach(categoria => {
     categoria.datos.forEach(item => {
       const row = document.createElement("tr");
-      const precioValue = item[categoria.precioKey] || item.precio;
+      let raw = item[categoria.precioKey] || item.precio;
+      const precioValue = (typeof raw === 'number') ? `$${Math.round(raw)}` : raw;
       row.innerHTML = `
         <td>${item.tipo || categoria.nombre}</td>
         <td>${item.nombre}</td>
@@ -257,7 +258,10 @@ function mostrarPreciosEnTabla(precios) {
   });
 
   document.querySelectorAll(".precio-editable").forEach(cell => {
-    cell.addEventListener("blur", guardarPreciosModificados);
+    cell.addEventListener("blur", function(e) {
+      cell.classList.add("modificado");
+      guardarPreciosModificados(e);
+    });
   });
 }
 
@@ -286,7 +290,7 @@ function guardarPreciosModificados(event) {
   }
 
   localStorage.setItem("precios", JSON.stringify(precios));
-  alert("Precio actualizado correctamente.");
+  
 }
 
 function exportarPreciosExcel() {
@@ -320,3 +324,44 @@ function exportarPreciosExcel() {
 window.verificarClave = verificarClave;
 window.cargarExcel = cargarExcel;
 window.exportarPreciosExcel = exportarPreciosExcel;
+
+
+let cambiosPendientes = [];
+
+function guardarPreciosModificados(event) {
+  const cell = event.target;
+  const categoria = cell.dataset.categoria;
+  const nombre = cell.dataset.nombre;
+  const espesor = cell.dataset.espesor === "N/A" ? null : parseFloat(cell.dataset.espesor);
+  const nuevoPrecio = cell.innerText.replace(/[^0-9A-Za-z]/g, "").trim();
+
+  cambiosPendientes.push({ categoria, nombre, espesor, nuevoPrecio });
+}
+
+function guardarPreciosPendientes() {
+  let precios = JSON.parse(localStorage.getItem("precios") || "{}");
+
+  cambiosPendientes.forEach(change => {
+    const { categoria, nombre, espesor, nuevoPrecio } = change;
+
+    if (categoria === "servicios") {
+      if (nombre === "Instalación") {
+        precios.servicios.instalacion.precio = nuevoPrecio;
+      } else if (nombre === "Transporte") {
+        precios.servicios.transporte.precio = nuevoPrecio;
+      }
+    } else {
+      const key = categoria === "vidrios" ? "precio_m2" :
+                  categoria === "separadores" || categoria === "terminaciones" ? "precio_ml" : "precio";
+      const array = precios[categoria] || [];
+      const item = array.find(i => i.nombre === nombre && (espesor === null || i.espesor === espesor));
+      if (item) {
+        item[key] = isNaN(nuevoPrecio) ? nuevoPrecio : parseFloat(nuevoPrecio);
+      }
+    }
+  });
+
+  localStorage.setItem("precios", JSON.stringify(precios));
+  cambiosPendientes = [];
+  document.querySelectorAll(".precio-editable").forEach(cell => cell.classList.remove("modificado"));
+}
