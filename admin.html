@@ -52,6 +52,7 @@
 <body>
 <div class="container login-container">
 <h1>Ingresar</h1>
+<p id="nombreAdmin" style="font-weight: bold;"></p>
 <input id="adminClave" placeholder="Clave Administrador" type="password"/>
 <button onclick="verificarClave()">Ingresar</button>
 <p id="errorClave" style="color: red;"></p>
@@ -84,5 +85,13 @@
 <tbody></tbody>
 </table><button onclick="guardarPreciosPendientes()">Guardar Precios</button>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const usuario = localStorage.getItem("usuario");
+  if (usuario && usuario === "Administrador") {
+    document.getElementById("nombreAdmin").textContent = `Sesión iniciada como: ${usuario}`;
+  }
+});
+</script>
 </body>
 </html>
