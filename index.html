@@ -61,7 +61,16 @@
 </header>
 <div class="container">
 <h2>Nueva Cotización</h2>
-<form id="cotizacionForm"><div><input id="nombreEmpresa" placeholder="Nombre" style="width: auto; display: block; margin-bottom: 8px;"/></div><div><input id="empresa" placeholder="Empresa" style="width: auto; display: block; margin-bottom: 8px;"/></div><div><input id="obra" placeholder="Obra" style="width: auto; display: block; margin-bottom: 8px;"/></div><div><input id="direccion" placeholder="Dirección" style="width: auto; display: block; margin-bottom: 8px;"/></div><div><input id="presupuesto" placeholder="Presupuesto" style="width: auto; display: block; margin-bottom: 8px;"/></div><div><input id="version" placeholder="Versión" readonly="readonly" style="width: auto; display: block; margin-bottom: 8px;"/></div><div><input id="fechaCotizacion" placeholder="Fecha de Cotización" readonly="readonly" style="width: auto; display: block; margin-bottom: 8px;"/></div><div><input id="folio" placeholder="Folio" style="width: auto; display: block; margin-bottom: 8px;"/></div><div><input id="supervisor" placeholder="Supervisor" style="width: auto; display: block; margin-bottom: 8px;"/></div></form>
+<form id="cotizacionForm">
+  <div><strong>Empresa:</strong> <span id="nombreUsuario"></span></div>
+  <div><label>Obra<br><input id="obra" placeholder="Obra" /></label></div>
+  <div><label>Dirección<br><input id="direccion" placeholder="Dirección" /></label></div>
+  <div><label>Presupuesto<br><input id="presupuesto" placeholder="Presupuesto" /></label></div>
+  <div><label>Versión<br><input id="version" readonly /></label></div>
+  <div><label>Fecha de Cotización<br><input id="fechaCotizacion" readonly /></label></div>
+  <div><label>Folio<br><input id="folio" placeholder="Folio" /></label></div>
+  <div><label>Supervisor<br><input id="supervisor" placeholder="Supervisor" /></label></div>
+</form>
 <div>
 <button id="agregarProducto">+ Añadir Ítem</button>
 <button id="agregarSimilar">+ Añadir Similar</button>
@@ -115,4 +124,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 </script></body>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("nombreUsuario").innerText = localStorage.getItem("usuario") || "Desconocido";
+
+  const fechaInput = document.getElementById("fechaCotizacion");
+  const versionInput = document.getElementById("version");
+  const usuario = localStorage.getItem("usuario") || "default";
+  const historial = JSON.parse(localStorage.getItem(`cotizaciones_${usuario}`) || "[]");
+
+  if (fechaInput) fechaInput.value = new Date().toLocaleDateString();
+  if (versionInput) versionInput.value = historial.length + 1;
+});
+</script>
+
 </html>
