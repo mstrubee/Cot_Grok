@@ -13,6 +13,18 @@
   <script src="cotizador.js"></script>
   <script src="storage.js"></script>
   <script src="pdfExporter.js"></script>
+  <style>
+    #cotizacionForm {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      max-width: 300px;
+    }
+    #cotizacionForm input {
+      width: 100%;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -22,15 +34,15 @@
   <div class="container">
     <h2>Nueva Cotización</h2>
     <form id="cotizacionForm">
-      <div><input type="text" id="nombreEmpresa" placeholder="Nombre" style="width:auto; display:block; margin-bottom:8px;" /></div>
-      <div><input type="text" id="empresa" placeholder="Empresa" style="width:auto; display:block; margin-bottom:8px;" /></div>
-      <div><input type="text" id="obra" placeholder="Obra" style="width:auto; display:block; margin-bottom:8px;" /></div>
-      <div><input type="text" id="direccion" placeholder="Dirección" style="width:auto; display:block; margin-bottom:8px;" /></div>
-      <div><input type="text" id="presupuesto" placeholder="Presupuesto" style="width:auto; display:block; margin-bottom:8px;" /></div>
-      <div><input type="text" id="version" placeholder="Versión" readonly style="width:auto; display:block; margin-bottom:8px;" /></div>
-      <div><input type="text" id="fechaCotizacion" placeholder="Fecha de Cotización" readonly style="width:auto; display:block; margin-bottom:8px;" /></div>
-      <div><input type="text" id="folio" placeholder="Folio" style="width:auto; display:block; margin-bottom:8px;" /></div>
-      <div><input type="text" id="supervisor" placeholder="Supervisor" style="width:auto; display:block; margin-bottom:8px;" /></div>
+      <input type="text" id="nombreEmpresa" placeholder="Nombre" />
+      <input type="text" id="empresa" placeholder="Empresa" />
+      <input type="text" id="obra" placeholder="Obra" />
+      <input type="text" id="direccion" placeholder="Dirección" />
+      <input type="text" id="presupuesto" placeholder="Presupuesto" />
+      <input type="text" id="version" placeholder="Versión" readonly />
+      <input type="text" id="fechaCotizacion" placeholder="Fecha de Cotización" readonly />
+      <input type="text" id="folio" placeholder="Folio" />
+      <input type="text" id="supervisor" placeholder="Supervisor" />
     </form>
     <div>
       <button id="agregarProducto">+ Añadir Ítem</button>
