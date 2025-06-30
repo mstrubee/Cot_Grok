@@ -15,8 +15,6 @@ function verificarClave() {
 function inicializarPreciosPorDefecto() {
   if (localStorage.getItem("precios")) {
     console.log("Precios ya existen en localStorage, omitiendo inicialización por defecto");
-    const precios = JSON.parse(localStorage.getItem("precios"));
-    mostrarPreciosEnTabla(precios);
     return;
   }
 
@@ -231,7 +229,6 @@ function procesarDatos(filas) {
 function mostrarPreciosEnTabla(precios) {
   const tbody = document.querySelector("#tablaPrecios tbody");
   tbody.innerHTML = "";
-  console.log("Renderizando tabla de precios con datos:", precios);
 
   const categorias = [
     { nombre: "Vidrios", datos: precios.vidrios, precioKey: "precio_m2" },
